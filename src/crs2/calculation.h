@@ -6,7 +6,6 @@ struct point_t;
 typedef double (*evaluated_function_t)(const int argCount, double *args);
 typedef int (*constraint_function_t)(int argNo, double value);
 
-
 typedef enum {
     Sequential,
     Parallel,

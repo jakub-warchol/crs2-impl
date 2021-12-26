@@ -75,15 +75,15 @@ int main(int argc, char **argv)
         }
 
         points[i] = point;
-        Point_Print(point);
     }
 
+    // global minimum
 //    points[10]->args[0] = 0;
 //    points[10]->args[1] = -1;
 
     printf("Found minimum: ");
     fflush(stdout);
-    point_t *solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraints, Sequential);
+    point_t *solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraints, Parallel);
     Point_Print(solution);
 
     for(int i = 0; i < N; i++) {
