@@ -1,6 +1,9 @@
 #ifndef CALCULATION_H
 #define CALCULATION_H
 
+#define CLC_RESOLUTION 1.001
+#define CLC_MAX_ITERATIONS 100
+
 struct point_t;
 
 typedef double (*evaluated_function_t)(const int argCount, double *args);

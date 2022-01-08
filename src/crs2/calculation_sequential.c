@@ -20,6 +20,7 @@ point_t *CalculationSequential_findMinimum(point_t **A, const int n, const int N
     point_t *L = NULL;
     point_t *R = calloc(n + 1, sizeof(point_t));
 
+    int counter = 0;
 
     while(true) {
         // find best and worst function
@@ -89,9 +90,14 @@ point_t *CalculationSequential_findMinimum(point_t **A, const int n, const int N
             }
         }
 
+        counter++;
+
         // check stop criterion
-        if((M->value / L->value) < 1.001) {
-            break; // congartulations, you've found the minimum!
+        if((M->value / L->value) < CLC_RESOLUTION) {
+            break; // congratulations, you've found the minimum!
+        }else if (counter > CLC_MAX_ITERATIONS){
+            printf("Max interations!\n");
+            break;
         }
     }
 

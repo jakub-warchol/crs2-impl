@@ -6,12 +6,18 @@
 #include "src/crs2/calculation.h"
 #include "src/points/point.h"
 
+#define M_PI 3.14159265358979323846
+
 /// TODO: temporary macro
-#define f(x1, x2) ((1 + ((x1) + (x2) + 1) * \
-    ((x1) + (x2) + 1) * (19 - 14 * (x1) + 3 * (x1) * (x1) - 14 * (x2) + 6 * (x1) * (x2) + 3 * (x2) * (x2)) * \
-    (19 - 14 * (x1) + 3 * (x1) * (x1) - 14 * (x2) + 6 * (x1) * (x2) + 3 * (x2) * (x2))) * \
-    (30 + (2 * (x1) - 3 * (x2)) * (2 * (x1) - 3 * (x2)) * (18 - 32 * (x1) + 12 * (x1) * (x1) + \
-    48 * (x2) - 36 * (x1) * (x2) + 27 * (x2) * (x2))))
+#define f(x1, x2) (1 + pow((x1 + x2 + 1),2) * (19 - 14*x1 + 3*pow(x1,2) - 14*x2 + 6*x1*x2 + 3*pow(x2,2))) * (30 + pow((2*x1 - 3*x2),2) * (18 - 32*x1 + 12*pow(x1,2) + 48*x2 - 36*x1*x2 + 27*pow(x2,2))) //GOLDSTEIN-PRICE FUNCTION
+
+//#define f(x1, x2) pow(sin(3*M_PI*x1),2) + pow((x1-1),2) * pow(1+(sin(3*M_PI*x2)),2) + pow((x2-1),2) * pow(1+(sin(2*M_PI*x2)),2) //LEVY FUNCTION N. 13
+
+//#define f(x1, x2) -(x2+47) * sin(sqrt(abs(x2+x1/2+47))) - x1 * sin(sqrt(abs(x1-(x2+47)))) //EGGHOLDER FUNCTION
+
+//#define f(x1, x2) -(1 + cos(12*sqrt(pow(x1,2)+pow(x2,2)))) / (0.5*(pow(x1,2)+pow(x2,2)) + 2); //DROP-WAVE FUNCTION
+
+//#define f(x1, x2) sin(x1 + x2) + pow((x1 - x2),2) - (1.5*x1) + 2.5*x2 + 1 //MCCORMICK FUNCTION
 
 double evaluatedFunction(const int n, double *args) {
     return f(args[0], args[1]);
@@ -38,7 +44,7 @@ int checkConstraints(int argNo, double value) {
 double generateValue(int argNo) {
     int sign = (rand() % 2 == 0) ? 1 : -1;
     double mul = 10;
-    double value = sign * drand48() * mul;
+    double value = sign * ((double)rand() / (double)RAND_MAX) * mul;
 
     while(true) {
         int res = checkConstraints(argNo, value);
@@ -51,7 +57,7 @@ double generateValue(int argNo) {
         }
 
         sign  = (rand() % 2 == 0) ? 1 : -1;
-        value = sign * drand48() * mul;
+        value = sign * ((double)rand() / (double)RAND_MAX) * mul;
     }
 
     return value;
@@ -78,13 +84,37 @@ int main(int argc, char **argv)
     }
 
     // global minimum
-//    points[10]->args[0] = 0;
-//    points[10]->args[1] = -1;
+    points[10]->args[0] = 0;
+    points[10]->args[1] = -1;
 
     printf("Found minimum: ");
     fflush(stdout);
-    point_t *solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraints, Parallel);
-    Point_Print(solution);
+
+    clock_t start, end;
+    double timeParallel = 0,timeSequential = 0;
+    point_t *solution1, *solution2;
+
+    int testInterations = 10;
+
+    for (int i = 0 ; i<testInterations; i++){
+
+        start = clock();
+        solution1 = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraints, Parallel);
+        end = clock();
+        timeParallel += (double)(end - start) / (double)(CLOCKS_PER_SEC);
+
+        start = clock();
+        solution2 = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraints, Sequential);
+        end = clock();
+        timeSequential += (double)(end - start) / (double)(CLOCKS_PER_SEC);
+
+    }
+
+    Point_Print(solution1);
+    Point_Print(solution2);
+
+    printf("%f \n",timeParallel/testInterations);
+    printf("%f \n",timeSequential/testInterations);
 
     for(int i = 0; i < N; i++) {
         Point_Destroy(points[i]);

@@ -24,6 +24,7 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
     point_t *L = NULL;
     point_t *R = calloc(n + 1, sizeof(point_t));
 
+    int counter = 0;
 
     while(true) {
         // find best and worst function
@@ -111,10 +112,16 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
             pthread_mutex_unlock(&mutex);
         }
 
+        counter++;
+
         // check stop criterion
-        if((M->value / L->value) < 1.001 || *solutionFound == true) {
-            break; // congartulations, you've found the minimum!
+        if((M->value / L->value) < CLC_RESOLUTION || *solutionFound == true) {
+            break; // congratulations, you've found the minimum!
+        }else if (counter > CLC_MAX_ITERATIONS){
+            printf("Max interations!\n");
+            break;
         }
+
     }
 
     // create solution point
