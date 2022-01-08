@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 #include <stdbool.h>
 
@@ -83,10 +84,6 @@ int main(int argc, char **argv)
         points[i] = point;
     }
 
-    // global minimum
-    points[10]->args[0] = 0;
-    points[10]->args[1] = -1;
-
     printf("Found minimum: ");
     fflush(stdout);
 
@@ -113,8 +110,8 @@ int main(int argc, char **argv)
     Point_Print(solution1);
     Point_Print(solution2);
 
-    printf("%f \n",timeParallel/testInterations);
-    printf("%f \n",timeSequential/testInterations);
+    printf("parallel: %f \n",timeParallel/testInterations);
+    printf("sequential: %f \n",timeSequential/testInterations);
 
     for(int i = 0; i < N; i++) {
         Point_Destroy(points[i]);

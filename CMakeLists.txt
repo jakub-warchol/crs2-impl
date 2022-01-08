@@ -10,3 +10,5 @@ set(CMAKE_USE_PTHREADS_INIT ON)
 
 find_package(Threads REQUIRED)
 target_link_libraries(CRS2 Threads::Threads)
+
+target_link_libraries(CRS2 m) # add libmath

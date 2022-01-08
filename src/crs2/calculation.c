@@ -8,6 +8,7 @@
 
 point_t *Calculation_FindMinimum(point_t **points, const int n, evaluated_function_t evaluatedFunction, constraint_function_t constaintFunction, execution_type_t executionType)
 {
+    assert(points != NULL && "Given points are null");
     assert(evaluatedFunction != NULL && "Evaluated function is null");
     assert(constaintFunction != NULL && "Constraint function is null");
 

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
+#include <unistd.h>
 #include <pthread.h>
 
 #define NUM_THREADS 4
@@ -13,6 +14,9 @@
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void* findMinimum(point_t **A, const int N, const int n, evaluated_function_t evaluatedFunction, constraint_function_t constaintFunction, volatile bool *solutionFound, point_t *finalSolution) {
+    // generate seed
+    unsigned int seed = time(NULL) ^ getpid() ^ pthread_self();
+
     // init some used below variables
     point_t* G = NULL;
     G = Point_Init(G, n);
@@ -25,9 +29,8 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
     point_t *R = calloc(n + 1, sizeof(point_t));
 
     int counter = 0;
-
     while(true) {
-        // find best and worst function
+        // find best and worst points
         M = A[0];
         L = A[0];
 
@@ -52,7 +55,7 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
             R[0] = *L;
 
             for(int i = 1; i < n + 1;) {
-                int idx = rand() % N;
+                int idx = rand_r(&seed) % N;
 
                 if(A[idx] != L) { // if chosen point is diffrent than the best
                     R[i] = *A[idx]; // add to simplex
@@ -95,7 +98,7 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
 
             // if solution was already found, just break loop
             if(*solutionFound == true) {
-                break;
+                goto cleanup;
             }
 
             // mutex
@@ -115,11 +118,11 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
         counter++;
 
         // check stop criterion
-        if((M->value / L->value) < CLC_RESOLUTION || *solutionFound == true) {
+        if((M->value / L->value) < CLC_RESOLUTION) {
             break; // congratulations, you've found the minimum!
         }else if (counter > CLC_MAX_ITERATIONS){
             printf("Max interations!\n");
-            break;
+            goto cleanup;
         }
 
     }
@@ -133,13 +136,13 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
         pthread_mutex_unlock(&mutex);
     }
 
+    cleanup:
     // remove G and P
     Point_Destroy(G);
     Point_Destroy(P);
 
     // free memory
     free(R);
-
     return NULL;
 }
 
