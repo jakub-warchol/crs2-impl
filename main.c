@@ -82,6 +82,7 @@ int main(int argc, char **argv)
             break;
     }
 
+    // preparw points array
     point_t** points = calloc(N, sizeof(point_t*));
     for(int i = 0; i < N; i++) {
         point_t *point = NULL;
@@ -109,7 +110,7 @@ int main(int argc, char **argv)
         fflush(stdout);
     }else{
         point_t *solution;
-        int solutionOption = strtol(argv[2], NULL, 10);;
+        int solutionOption = strtol(argv[2], NULL, 10);
         switch(solutionOption){
             case 1:
                 solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
@@ -119,10 +120,14 @@ int main(int argc, char **argv)
                 break;
             default:
                 printf("Error");
-                break;
+                exit(EXIT_FAILURE);
         }
+
+        printf("Found minimum: \n");
+        Point_Print(solution);
     }
 
+    // clear
     for(int i = 0; i < N; i++) {
         Point_Destroy(points[i]);
     }
