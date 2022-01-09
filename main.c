@@ -26,7 +26,7 @@ double generateValue(int argNo, constraint_function_t checkConstraints) {
             mul *= 2;
         }
 
-        sign  = (rand() % 2 == 0) ? 1 : -1;
+        sign = (rand() % 2 == 0) ? 1 : -1;
         value = sign * ((double)rand() / (double)RAND_MAX) * mul;
     }
 
@@ -44,15 +44,20 @@ int main(int argc, char **argv)
     evaluated_function_t evaluatedFunction         = NULL;
     constraint_function_t checkConstraintsFunction = NULL;
 
-    int option;
-    printf("Wybierz numer sprawdzanej funkcji i potwierdz enter: \n"
-           "1. Goldstein-Price \n"
-           "2. Levy \n"
-           "3. Eggholder \n"
-           "4. Drop Wave \n"
-           "5. McCormick \n");
-    scanf("%d", &option);
-    clrscr();
+    int option = 0;
+
+    if (argc < 3) {
+        printf("Select number of function to be solved and confirm with enter: \n"
+               "1. Goldstein-Price \n"
+               "2. Levy \n"
+               "3. Eggholder \n"
+               "4. Drop Wave \n"
+               "5. McCormick \n");
+        scanf("%d", &option);
+        clrscr();
+    }else{
+        option = strtol(argv[1], NULL, 10);
+    }
 
     switch (option){
         case 1:
@@ -90,34 +95,33 @@ int main(int argc, char **argv)
         points[i] = point;
     }
 
-    printf("Found minimum: ");
-    fflush(stdout);
+    if (argc < 3) {
+        point_t *solutionSequential = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
+        point_t *solutionParallel = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
 
-    clock_t start, end;
-    double timeParallel = 0,timeSequential = 0;
-    point_t *solution1, *solution2;
+        printf("Found minimum: \n");
+        printf("Sequential: ");
+        Point_Print(solutionSequential);
 
-    int testIterations = 10;
+        printf("Parallel: ");
+        Point_Print(solutionParallel);
 
-    for (int i = 0 ; i<testIterations; i++){
-
-        start = clock();
-        solution1 = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
-        end = clock();
-        timeParallel += (double)(end - start) / (double)(CLOCKS_PER_SEC);
-
-        start = clock();
-        solution2 = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
-        end = clock();
-        timeSequential += (double)(end - start) / (double)(CLOCKS_PER_SEC);
-
+        fflush(stdout);
+    }else{
+        point_t *solution;
+        int solutionOption = strtol(argv[2], NULL, 10);;
+        switch(solutionOption){
+            case 1:
+                solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
+                break;
+            case 2:
+                solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
+                break;
+            default:
+                printf("Error");
+                break;
+        }
     }
-
-    Point_Print(solution1);
-    Point_Print(solution2);
-
-    printf("Parallel: %f \n",timeParallel/testIterations);
-    printf("Sequential: %f \n",timeSequential/testIterations);
 
     for(int i = 0; i < N; i++) {
         Point_Destroy(points[i]);
