@@ -118,6 +118,9 @@ int main(int argc, char **argv)
             case 2:
                 solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
                 break;
+        case 3:
+                solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Distribution);
+                break;
             default:
                 printf("Error");
                 exit(EXIT_FAILURE);

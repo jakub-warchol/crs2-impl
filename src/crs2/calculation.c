@@ -1,6 +1,7 @@
 #include "calculation.h"
 #include "calculation_sequential.h"
 #include "calculation_concurrent.h"
+#include "calculation_distributed.h"
 #include "../points/point.h"
 
 #include <stdlib.h>
@@ -29,7 +30,7 @@ point_t *Calculation_FindMinimum(point_t **points, const int n, evaluated_functi
     } else if(executionType == Parallel) { // run in multiple thread
         solution = CalculationConcurrent_findMinimum(points, n, N, evaluatedFunction, constaintFunction);
     } else if(executionType == Distribution) { // run in gRPC/MPI
-
+        solution = CalculationDistributed_findMinimum(points, n, N, evaluatedFunction, constaintFunction);
     }
 
     return solution;

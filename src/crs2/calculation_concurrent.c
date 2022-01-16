@@ -118,7 +118,7 @@ static void* findMinimum(point_t **A, const int N, const int n, evaluated_functi
         counter++;
 
         // check stop criterion
-        if((M->value / L->value) < CLC_RESOLUTION) {
+        if((L->value == 0. && M->value == 0.) || (M->value / L->value) < CLC_RESOLUTION) {
             break; // congratulations, you've found the minimum!
         }else if (counter > CLC_MAX_ITERATIONS){
             printf("Max interations!\n");
