@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <mpi.h>
 
 #include "src/crs2/calculation.h"
 #include "src/points/point.h"
@@ -44,20 +45,37 @@ int main(int argc, char **argv)
     evaluated_function_t evaluatedFunction         = NULL;
     constraint_function_t checkConstraintsFunction = NULL;
 
-    int option = 0;
+    MPI_Init(NULL, NULL);
 
-    if (argc < 3) {
-        printf("Select number of function to be solved and confirm with enter: \n"
-               "1. Goldstein-Price \n"
-               "2. Levy \n"
-               "3. Eggholder \n"
-               "4. Drop Wave \n"
-               "5. McCormick \n");
-        scanf("%d", &option);
-        clrscr();
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    int currentRank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &currentRank);
+
+    int option = 0;
+    int threadsNumber = world_size - 1;
+
+    if (currentRank == 0){
+        if (argc < 3) {
+            printf("Select number of function to be solved and confirm with enter: \n"
+                   "1. Goldstein-Price \n"
+                   "2. Levy \n"
+                   "3. Eggholder \n"
+                   "4. Drop Wave \n"
+                   "5. McCormick \n");
+            scanf("%d", &option);
+        }else{
+            option = strtol(argv[1], NULL, 10);
+        }
+        for(int i = 0; i<threadsNumber; i++) {
+            MPI_Send(&option, 1, MPI_INTEGER, i+1, 0, MPI_COMM_WORLD); // wyslij continue
+        }
     }else{
-        option = strtol(argv[1], NULL, 10);
+        MPI_Recv(&option, 1, MPI_INTEGER, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); //odbierz continue!
     }
+
+    MPI_Barrier(MPI_COMM_WORLD); //wyrownanie
 
     switch (option){
         case 1:
@@ -82,7 +100,7 @@ int main(int argc, char **argv)
             break;
     }
 
-    // preparw points array
+    // prepare points array
     point_t** points = calloc(N, sizeof(point_t*));
     for(int i = 0; i < N; i++) {
         point_t *point = NULL;
@@ -99,15 +117,30 @@ int main(int argc, char **argv)
     if (argc < 3) {
         point_t *solutionSequential = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
         point_t *solutionParallel = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
+        point_t *solutionDistribution;
 
-        printf("Found minimum: \n");
-        printf("Sequential: ");
-        Point_Print(solutionSequential);
+        if(threadsNumber > 0){
+            solutionDistribution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Distribution);
+        }
 
-        printf("Parallel: ");
-        Point_Print(solutionParallel);
+        if (currentRank == threadsNumber) {
+            clrscr();
 
-        fflush(stdout);
+            printf("Found minimum: \n");
+            printf("Sequential: ");
+            Point_Print(solutionSequential);
+
+            printf("Parallel: ");
+            Point_Print(solutionParallel);
+
+            if(threadsNumber > 0){
+                printf("Distribution: ");
+                Point_Print(solutionDistribution);
+            }
+
+            fflush(stdout);
+        }
+
     }else{
         point_t *solution;
         int solutionOption = strtol(argv[2], NULL, 10);
@@ -118,7 +151,7 @@ int main(int argc, char **argv)
             case 2:
                 solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
                 break;
-        case 3:
+            case 3:
                 solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Distribution);
                 break;
             default:
@@ -126,8 +159,11 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
-        printf("Found minimum: \n");
-        Point_Print(solution);
+        if (currentRank == threadsNumber){
+            printf("Found minimum: \n");
+            Point_Print(solution);
+        }
+
     }
 
     // clear
@@ -135,6 +171,8 @@ int main(int argc, char **argv)
         Point_Destroy(points[i]);
     }
     free(points);
+
+    MPI_Finalize();
 
     return 0;
 }
