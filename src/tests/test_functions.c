@@ -143,3 +143,52 @@ int mccormick_constraint(int argNo, double value)
 
     return -1;
 }
+
+double colville_function(const int n, double *args) {
+    if(n != 4) {
+        return 0;
+    }
+
+    double x1 = args[0];
+    double x2 = args[1];
+    double x3 = args[2];
+    double x4 = args[3];
+
+    return 100 * pow((pow(x1, 2) - x2), 2) + pow((x1 - 1), 2) + pow((x3 - 1), 2) +
+            90 * pow((pow(x3, 2) - x4), 2) + 10.1 * (pow((x2 - 1), 2) + pow((x4 - 1), 2)) +
+            19.8 * (x2 - 1) * (x4 - 1);
+}
+
+int colville_constraint(int argNo, double value) {
+    if(value < -10) {
+        return -1;
+    } else if(value > 10) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+double griewank_function(const int n, double *args) {
+    double sum = 0;
+    double prod = 1;
+
+    for (int i = 0; i<n;i++){
+
+        double xi = args[i];
+        sum = sum + (pow(xi,2)/4000);
+        prod = prod * cos(xi/sqrt(i+1));
+    }
+
+    return sum - prod + 1;
+}
+
+int griewank_constraint(int argNo, double value) {
+    if(value < -600) {
+        return -1;
+    } else if(value > 600) {
+        return 1;
+    } else {
+        return 0;
+    }
+}

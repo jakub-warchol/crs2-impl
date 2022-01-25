@@ -2,7 +2,7 @@
 #define CALCULATION_H
 
 #define CLC_RESOLUTION 1.001
-#define CLC_MAX_ITERATIONS 100
+#define CLC_MAX_ITERATIONS 10000
 
 struct point_t;
 

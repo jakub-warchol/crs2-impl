@@ -38,9 +38,6 @@ int main(int argc, char **argv)
 {
     srand(time(NULL));
 
-    const int n = 2; // no of variables
-    const int N = 10 * (n + 1);
-
     // function which minimum is needed
     evaluated_function_t evaluatedFunction         = NULL;
     constraint_function_t checkConstraintsFunction = NULL;
@@ -63,7 +60,8 @@ int main(int argc, char **argv)
                    "2. Levy \n"
                    "3. Eggholder \n"
                    "4. Drop Wave \n"
-                   "5. McCormick \n");
+                   "5. McCormick \n"
+                   "6. Colville \n");
             scanf("%d", &option);
         }else{
             option = strtol(argv[1], NULL, 10);
@@ -77,28 +75,47 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD); //wyrownanie
 
+    int n = 0;
+
     switch (option){
         case 1:
             evaluatedFunction        = goldstein_price_function;
             checkConstraintsFunction = goldstein_price_constraint;
+            n = 2;
             break;
         case 2:
             evaluatedFunction        = levy_function;
             checkConstraintsFunction = levy_constraint;
+            n = 2;
             break;
         case 3:
             evaluatedFunction        = eggholder_function;
             checkConstraintsFunction = eggholder_constraint;
+            n = 2;
             break;
         case 4:
             evaluatedFunction        = drop_wave_function;
             checkConstraintsFunction = drop_wave_constraint;
+            n = 2;
             break;
         case 5:
             evaluatedFunction        = mccormick_function;
             checkConstraintsFunction = mccormick_constraint;
+            n = 2;
+            break;
+        case 6:
+            evaluatedFunction        = colville_function;
+            checkConstraintsFunction = colville_constraint;
+            n = 4;
+            break;
+        case 7:
+            evaluatedFunction        = griewank_function;
+            checkConstraintsFunction = griewank_constraint;
+            n = 100;
             break;
     }
+
+    int N = 10 * (n + 1);
 
     // prepare points array
     point_t** points = calloc(N, sizeof(point_t*));
@@ -114,7 +131,9 @@ int main(int argc, char **argv)
         points[i] = point;
     }
 
+
     if (argc < 3) {
+
         point_t *solutionSequential = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
         point_t *solutionParallel = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
         point_t *solutionDistribution;
