@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &currentRank);
 
     int option = 0;
-    int threadsNumber = world_size - 1;
+    int worldInstance = world_size - 1;
 
     if (currentRank == 0){
         if (argc < 3) {
@@ -61,19 +61,20 @@ int main(int argc, char **argv)
                    "3. Eggholder \n"
                    "4. Drop Wave \n"
                    "5. McCormick \n"
-                   "6. Colville \n");
+                   "6. Colville \n"
+                   "7. Griewank \n");
             scanf("%d", &option);
         }else{
             option = strtol(argv[1], NULL, 10);
         }
-        for(int i = 0; i<threadsNumber; i++) {
-            MPI_Send(&option, 1, MPI_INTEGER, i+1, 0, MPI_COMM_WORLD); // wyslij continue
+        for(int i = 0; i<worldInstance; i++) {
+            MPI_Send(&option, 1, MPI_INTEGER, i+1, 0, MPI_COMM_WORLD); // unblock others
         }
     }else{
-        MPI_Recv(&option, 1, MPI_INTEGER, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); //odbierz continue!
+        MPI_Recv(&option, 1, MPI_INTEGER, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // block until main will send data
     }
 
-    MPI_Barrier(MPI_COMM_WORLD); //wyrownanie
+    MPI_Barrier(MPI_COMM_WORLD); // wait for all
 
     int n = 0;
 
@@ -131,6 +132,10 @@ int main(int argc, char **argv)
         points[i] = point;
     }
 
+//    // TEST FOR GLOBAL MIN
+//    for(int i = 0; i < n; i++) {
+//        points[10]->args[i] = 0.;
+//    }
 
     if (argc < 3) {
 
@@ -138,11 +143,11 @@ int main(int argc, char **argv)
         point_t *solutionParallel = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
         point_t *solutionDistribution;
 
-        if(threadsNumber > 0){
+        if(worldInstance > 0){
             solutionDistribution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Distribution);
         }
 
-        if (currentRank == threadsNumber) {
+        if (currentRank == worldInstance) {
             clrscr();
 
             printf("Found minimum: \n");
@@ -152,7 +157,7 @@ int main(int argc, char **argv)
             printf("Parallel: ");
             Point_Print(solutionParallel);
 
-            if(threadsNumber > 0){
+            if(worldInstance > 0){
                 printf("Distribution: ");
                 Point_Print(solutionDistribution);
             }
@@ -178,7 +183,7 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
-        if (currentRank == threadsNumber){
+        if (currentRank == worldInstance){
             printf("Found minimum: \n");
             Point_Print(solution);
         }

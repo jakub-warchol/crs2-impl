@@ -159,7 +159,10 @@ double colville_function(const int n, double *args) {
             19.8 * (x2 - 1) * (x4 - 1);
 }
 
-int colville_constraint(int argNo, double value) {
+int colville_constraint(int argNo, double value)
+{
+    //NOTE: Colville function has the same constraint for every arguments
+
     if(value < -10) {
         return -1;
     } else if(value > 10) {
@@ -169,7 +172,8 @@ int colville_constraint(int argNo, double value) {
     }
 }
 
-double griewank_function(const int n, double *args) {
+double griewank_function(const int n, double *args)
+{
     double sum = 0;
     double prod = 1;
 
@@ -183,7 +187,10 @@ double griewank_function(const int n, double *args) {
     return sum - prod + 1;
 }
 
-int griewank_constraint(int argNo, double value) {
+int griewank_constraint(int argNo, double value)
+{
+    //NOTE: Griewank function has the same constraint for every arguments
+
     if(value < -600) {
         return -1;
     } else if(value > 600) {
