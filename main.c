@@ -112,7 +112,7 @@ int main(int argc, char **argv)
         case 7:
             evaluatedFunction        = griewank_function;
             checkConstraintsFunction = griewank_constraint;
-            n = 100;
+            n = 10;
             break;
     }
 
@@ -132,10 +132,10 @@ int main(int argc, char **argv)
         points[i] = point;
     }
 
-//    // TEST FOR GLOBAL MIN
-//    for(int i = 0; i < n; i++) {
-//        points[10]->args[i] = 0.;
-//    }
+    // TEST FOR GLOBAL MIN
+    for(int i = 0; i < n; i++) {
+        points[10]->args[i] = 0.8;
+    }
 
     if (argc < 3) {
 
@@ -168,19 +168,21 @@ int main(int argc, char **argv)
     }else{
         point_t *solution;
         int solutionOption = strtol(argv[2], NULL, 10);
-        switch(solutionOption){
-            case 1:
-                solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
-                break;
-            case 2:
-                solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
-                break;
-            case 3:
-                solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Distribution);
-                break;
-            default:
-                printf("Error");
-                exit(EXIT_FAILURE);
+        for (int i = 0; i < 1000; i++){
+            switch(solutionOption){
+                case 1:
+                    solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Sequential);
+                    break;
+                case 2:
+                    solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Parallel);
+                    break;
+                case 3:
+                    solution = Calculation_FindMinimum(points, n, evaluatedFunction, checkConstraintsFunction, Distribution);
+                    break;
+                default:
+                    printf("Error");
+                    exit(EXIT_FAILURE);
+            }
         }
 
         if (currentRank == worldInstance){
